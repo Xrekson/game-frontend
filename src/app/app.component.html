@@ -1,0 +1,40 @@
+<div class="game-app-layout">
+  <!-- Top HUD Bar -->
+  <app-header-hud></app-header-hud>
+
+  <!-- Main Viewport & UI Overlay Split -->
+  <main class="main-body">
+    <!-- 2D Phaser Canvas Viewport -->
+    <div class="canvas-viewport">
+      <phaser-game></phaser-game>
+      <div class="controls-hint">
+        🎮 Move: <b>WASD</b> or <b>Arrow Keys</b> | <b>[E]</b> Interact / Attack
+      </div>
+    </div>
+
+    <!-- Right Side Dashboard & Tab Panels -->
+    <aside class="dashboard-sidebar">
+      <nav class="tab-nav">
+        <button [class.active]="(activeTab$ | async) === 'economy'" (click)="setTab('economy')">
+          ⚡ Upgrades
+        </button>
+        <button [class.active]="(activeTab$ | async) === 'inventory'" (click)="setTab('inventory')">
+          🛡️ Armory
+        </button>
+        <button [class.active]="(activeTab$ | async) === 'trading'" (click)="setTab('trading')">
+          🏪 Market
+        </button>
+      </nav>
+
+      <div class="tab-content">
+        <app-economy-panel *ngIf="(activeTab$ | async) === 'economy'"></app-economy-panel>
+        <app-inventory-panel *ngIf="(activeTab$ | async) === 'inventory'"></app-inventory-panel>
+        <app-marketplace-panel *ngIf="(activeTab$ | async) === 'trading'"></app-marketplace-panel>
+      </div>
+    </aside>
+  </main>
+
+  <!-- Modals -->
+  <app-auth-modal></app-auth-modal>
+  <app-npc-shop-modal></app-npc-shop-modal>
+</div>
