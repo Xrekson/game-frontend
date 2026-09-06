@@ -1,7 +1,8 @@
-import { Scene } from 'phaser';
+import * as Phaser from 'phaser';
 import { EventBus } from '../EventBus';
 
-export class SafeZoneScene extends Scene {
+export class SafeZoneScene extends Phaser.Scene
+{
     private player!: Phaser.GameObjects.Sprite;
     private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
     private keyWASD!: { [key: string]: Phaser.Input.Keyboard.Key };
@@ -12,21 +13,25 @@ export class SafeZoneScene extends Scene {
     private alchemist!: Phaser.GameObjects.Sprite;
     private dungeonPortal!: Phaser.GameObjects.Sprite;
 
-    constructor() {
+    constructor()
+    {
         super('SafeZoneScene');
     }
 
-    create() {
+    create()
+    {
         this.cameras.main.setBackgroundColor(0x0f172a);
 
         // Draw 2D Safe Zone Tile Grid
         const graphics = this.add.graphics();
         graphics.lineStyle(1, 0x1e293b, 0.5);
-        for (let x = 0; x < 1000; x += 40) {
+        for (let x = 0; x < 1000; x += 40)
+        {
             graphics.moveTo(x, 0);
             graphics.lineTo(x, 1000);
         }
-        for (let y = 0; y < 1000; y += 40) {
+        for (let y = 0; y < 1000; y += 40)
+        {
             graphics.moveTo(0, y);
             graphics.lineTo(1000, y);
         }
@@ -52,7 +57,8 @@ export class SafeZoneScene extends Scene {
         this.player = this.add.sprite(500, 500, 'player');
 
         // Setup Controls
-        if (this.input.keyboard) {
+        if (this.input.keyboard)
+        {
             this.cursors = this.input.keyboard.createCursorKeys();
             this.keyWASD = {
                 W: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W),
@@ -77,7 +83,9 @@ export class SafeZoneScene extends Scene {
         EventBus.emit('zone-changed', 'safe_zone_1');
     }
 
-    override update() {
+    override update()
+    {
+        console.log("yoooooy!");
         const speed = 4;
         let vx = 0;
         let vy = 0;
@@ -96,22 +104,29 @@ export class SafeZoneScene extends Scene {
         const distAlchemist = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.alchemist.x, this.alchemist.y);
         const distPortal = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.dungeonPortal.x, this.dungeonPortal.y);
 
-        if (distBlacksmith < 60) {
+        if (distBlacksmith < 60)
+        {
             this.promptText.setPosition(this.blacksmith.x, this.blacksmith.y - 40).setText('[E] Talk to Blacksmith').setVisible(true);
-            if (Phaser.Input.Keyboard.JustDown(this.keyE)) {
+            if (Phaser.Input.Keyboard.JustDown(this.keyE))
+            {
                 EventBus.emit('open-npc-shop', { id: 'npc_blacksmith', name: 'Garrick the Blacksmith', dialogue: 'Welcome traveler! Look at my weapons and armours.', shop_item_template_ids: ['wep_iron_sword', 'wep_mana_blade', 'arm_leather_vest', 'arm_plate_armour'] });
             }
-        } else if (distAlchemist < 60) {
+        } else if (distAlchemist < 60)
+        {
             this.promptText.setPosition(this.alchemist.x, this.alchemist.y - 40).setText('[E] Talk to Mystic').setVisible(true);
-            if (Phaser.Input.Keyboard.JustDown(this.keyE)) {
+            if (Phaser.Input.Keyboard.JustDown(this.keyE))
+            {
                 EventBus.emit('open-npc-shop', { id: 'npc_alchemist', name: 'Lyra the Mystic', dialogue: 'Seeking grand power? Behold the legendary artifacts.', shop_item_template_ids: ['arm_ring_power'] });
             }
-        } else if (distPortal < 60) {
+        } else if (distPortal < 60)
+        {
             this.promptText.setPosition(this.dungeonPortal.x, this.dungeonPortal.y - 45).setText('[E] Enter Crypt Dungeon').setVisible(true);
-            if (Phaser.Input.Keyboard.JustDown(this.keyE)) {
+            if (Phaser.Input.Keyboard.JustDown(this.keyE))
+            {
                 this.scene.start('DungeonScene');
             }
-        } else {
+        } else
+        {
             this.promptText.setVisible(false);
         }
     }

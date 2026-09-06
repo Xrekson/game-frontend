@@ -1,7 +1,7 @@
-import { Scene } from 'phaser';
+import * as Phaser from 'phaser';
 import { EventBus } from '../EventBus';
 
-export class DungeonScene extends Scene {
+export class DungeonScene extends Phaser.Scene {
     private player!: Phaser.GameObjects.Sprite;
     private monster!: Phaser.GameObjects.Sprite;
     private returnPortal!: Phaser.GameObjects.Sprite;

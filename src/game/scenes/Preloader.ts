@@ -1,7 +1,7 @@
-import { Scene } from 'phaser';
+import * as Phaser from 'phaser';
 import { EventBus } from '../EventBus';
 
-export class Preloader extends Scene {
+export class Preloader extends Phaser.Scene {
     constructor() {
         super('Preloader');
     }
