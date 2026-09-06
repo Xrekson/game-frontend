@@ -24,12 +24,16 @@
         <button [class.active]="(activeTab$ | async) === 'trading'" (click)="setTab('trading')">
           🏪 Market
         </button>
+        <button [class.active]="(activeTab$ | async) === 'admin'" (click)="setTab('admin')">
+          ⚙️ Admin
+        </button>
       </nav>
 
       <div class="tab-content">
         <app-economy-panel *ngIf="(activeTab$ | async) === 'economy'"></app-economy-panel>
         <app-inventory-panel *ngIf="(activeTab$ | async) === 'inventory'"></app-inventory-panel>
         <app-marketplace-panel *ngIf="(activeTab$ | async) === 'trading'"></app-marketplace-panel>
+        <app-admin-panel *ngIf="(activeTab$ | async) === 'admin'"></app-admin-panel>
       </div>
     </aside>
   </main>

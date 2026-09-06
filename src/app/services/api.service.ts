@@ -70,6 +70,15 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/inventory/templates`, { headers: this.getHeaders() });
   }
 
+  // Admin Item Management
+  createItemTemplate(template: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/admin/inventory/templates`, template, { headers: this.getHeaders() });
+  }
+
+  updateItemTemplate(template: any): Observable<any> {
+    return this.http.put(`${this.baseUrl}/admin/inventory/templates`, template, { headers: this.getHeaders() });
+  }
+
   // Trading
   getListings(status: string = 'active'): Observable<any> {
     return this.http.get(`${this.baseUrl}/trading/listings?status=${status}`, { headers: this.getHeaders() });

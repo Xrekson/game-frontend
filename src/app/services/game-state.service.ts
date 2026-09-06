@@ -8,6 +8,7 @@ export interface PlayerProfile
   level: number;
   xp: number;
   avatar_url: string;
+  role?: string;
 }
 
 export interface UpgradeItem
@@ -21,6 +22,27 @@ export interface UpgradeItem
   description: string;
 }
 
+export interface ItemAttribute
+{
+  key: string;
+  type: string;             // "DAMAGE", "BUFF", "EXP_BONUS", "GOLD_BONUS", "SPECIAL"
+  value: string;            // e.g. "15", "1.2", "20%"
+  calculation_expr: string; // e.g. "base_atk * 1.25", "xp * 1.20"
+}
+
+export interface ItemTemplate
+{
+  template_id: string;
+  name: string;
+  type: number;
+  base_attack: number;
+  base_defense: number;
+  rarity: string;
+  base_price: number;
+  has_attributes: boolean;
+  attributes: ItemAttribute[];
+}
+
 export interface InventoryItem
 {
   id: string;
@@ -32,6 +54,8 @@ export interface InventoryItem
   rarity: string;
   is_equipped: boolean;
   price: number;
+  has_attributes?: boolean;
+  attributes?: ItemAttribute[];
 }
 
 @Injectable({
@@ -49,7 +73,7 @@ export class GameStateService
   public upgrades$ = new BehaviorSubject<UpgradeItem[]>([]);
   public inventory$ = new BehaviorSubject<InventoryItem[]>([]);
   public currentMap$ = new BehaviorSubject<string>('safe_zone_1');
-  public activeTab$ = new BehaviorSubject<string>('economy'); // 'economy', 'inventory', 'trading'
+  public activeTab$ = new BehaviorSubject<string>('economy'); // 'economy', 'inventory', 'trading', 'admin'
 
   public activeNPCShop$ = new BehaviorSubject<any | null>(null);
   public showAuthModal$ = new BehaviorSubject<boolean>(false);

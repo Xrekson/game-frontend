@@ -5,6 +5,7 @@ import { HeaderHudComponent } from './components/header-hud/header-hud.component
 import { EconomyPanelComponent } from './components/economy-panel/economy-panel.component';
 import { InventoryPanelComponent } from './components/inventory-panel/inventory-panel.component';
 import { MarketplacePanelComponent } from './components/marketplace-panel/marketplace-panel.component';
+import { AdminPanelComponent } from './components/admin-panel/admin-panel.component';
 import { AuthModalComponent } from './components/auth-modal/auth-modal.component';
 import { NpcShopModalComponent } from './components/npc-shop-modal/npc-shop-modal.component';
 import { GameStateService } from './services/game-state.service';
@@ -21,6 +22,7 @@ import { EventBus } from '../game/EventBus';
     EconomyPanelComponent,
     InventoryPanelComponent,
     MarketplacePanelComponent,
+    AdminPanelComponent,
     AuthModalComponent,
     NpcShopModalComponent
   ],

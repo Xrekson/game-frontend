@@ -24,6 +24,14 @@ import { GameStateService, InventoryItem } from '../../services/game-state.servi
               <span *ngIf="item.attack > 0" class="stat-atk">⚔️ +{{ item.attack }} Atk</span>
               <span *ngIf="item.defense > 0" class="stat-def">🛡️ +{{ item.defense }} Def</span>
             </div>
+
+            <!-- Dynamic Attributes Badge List -->
+            <div class="attributes-container" *ngIf="item.has_attributes && item.attributes && item.attributes.length > 0">
+              <div class="attr-chip" *ngFor="let attr of item.attributes" [class]="attr.type.toLowerCase()">
+                <span class="attr-title">✨ {{ attr.key }}: {{ attr.value }}</span>
+                <span class="attr-expr" *ngIf="attr.calculation_expr">({{ attr.type }}: {{ attr.calculation_expr }})</span>
+              </div>
+            </div>
           </div>
 
           <button
@@ -57,11 +65,22 @@ import { GameStateService, InventoryItem } from '../../services/game-state.servi
     .rarity-badge.rare { background: #0284c7; color: white; }
     .rarity-badge.epic { background: #7e22ce; color: white; }
     .rarity-badge.legendary { background: #eab308; color: #451a03; }
-    .item-body { display: flex; flex-direction: column; gap: 2px; }
+    .item-body { display: flex; flex-direction: column; gap: 4px; }
     .item-name { font-weight: 700; font-size: 13px; color: #f1f5f9; }
     .item-stats { display: flex; gap: 8px; font-size: 11px; font-weight: 600; }
     .stat-atk { color: #f87171; }
     .stat-def { color: #60a5fa; }
+    .attributes-container { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
+    .attr-chip {
+      font-size: 10px; padding: 4px 6px; border-radius: 6px; background: rgba(15, 23, 42, 0.8);
+      border-left: 3px solid #38bdf8; display: flex; flex-direction: column; gap: 2px;
+    }
+    .attr-chip.damage { border-left-color: #ef4444; }
+    .attr-chip.buff { border-left-color: #10b981; }
+    .attr-chip.exp_bonus { border-left-color: #a855f7; }
+    .attr-chip.gold_bonus { border-left-color: #eab308; }
+    .attr-title { font-weight: 700; color: #fef08a; }
+    .attr-expr { font-size: 9px; color: #94a3b8; font-family: monospace; }
     .btn-action {
       background: #0284c7; border: none; color: white; font-size: 12px; font-weight: 700;
       padding: 6px 12px; border-radius: 6px; cursor: pointer;
@@ -89,7 +108,10 @@ export class InventoryPanelComponent implements OnInit {
   }
 
   getIcon(templateId: string): string {
-    const valid = ['wep_iron_sword', 'wep_mana_blade', 'arm_leather_vest', 'arm_plate_armour', 'arm_ring_power'];
+    const valid = [
+      'wep_iron_sword', 'wep_mana_blade', 'arm_leather_vest', 'arm_plate_armour', 'arm_ring_power',
+      'wep_stone_picker', 'wep_iron_gladiator', 'wep_havoc_axe', 'weapon_stone_picker', 'weapon_iron_gladiator', 'weapon_havoc_axe'
+    ];
     if (valid.includes(templateId)) {
       return `assets/svg/${templateId}.svg`;
     }
@@ -98,7 +120,6 @@ export class InventoryPanelComponent implements OnInit {
 
   toggleEquip(item: InventoryItem) {
     if (item.is_equipped) {
-      // unequip
       this.loadInventory();
     } else {
       this.api.equipItem(item.id).subscribe(() => {
