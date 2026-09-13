@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
@@ -8,10 +8,37 @@ import { Observable } from 'rxjs';
 export class ApiService {
   private baseUrl = 'http://localhost:8080/api/v1';
 
+  // Angular Signal tracking login state
+  public isLoggedIn = signal<boolean>(!!localStorage.getItem('jwt_token'));
+
   constructor(private http: HttpClient) {
     if (window.location.hostname !== 'localhost') {
       this.baseUrl = `http://${window.location.hostname}:8080/api/v1`;
     }
+  }
+
+  public setLoggedIn(status: boolean): void {
+    this.isLoggedIn.set(status);
+  }
+
+  public logout(): void {
+    localStorage.removeItem('jwt_token');
+    this.isLoggedIn.set(false);
+  }
+
+  public getUserRole(): string {
+    const token = localStorage.getItem('jwt_token');
+    if (!token) return '';
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload?.role || '';
+    } catch {
+      return '';
+    }
+  }
+
+  public isAdmin(): boolean {
+    return this.getUserRole() === 'admin';
   }
 
   private getHeaders(): HttpHeaders {

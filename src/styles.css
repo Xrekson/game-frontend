@@ -115,3 +115,64 @@ body, html {
   background: #334155;
   border-radius: 3px;
 }
+
+/* 429 Rate Limit Alert Banner Overlay */
+.rate-limit-overlay {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  background: linear-gradient(135deg, rgba(225, 29, 72, 0.95), rgba(159, 18, 57, 0.95));
+  border: 1px solid rgba(253, 164, 175, 0.5);
+  box-shadow: 0 10px 30px rgba(225, 29, 72, 0.4), 0 0 20px rgba(0, 0, 0, 0.8);
+  border-radius: 16px;
+  padding: 12px 24px;
+  backdrop-filter: blur(12px);
+  animation: pulseRateLimit 1.5s infinite ease-in-out;
+}
+
+.rate-limit-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: #fff;
+}
+
+.rate-limit-icon {
+  font-size: 24px;
+}
+
+.rate-limit-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.rate-limit-title {
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  color: #ffe4e6;
+}
+
+.rate-limit-sub {
+  font-size: 11px;
+  color: #fecdd3;
+}
+
+.rate-limit-timer-badge {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 6px 14px;
+  font-weight: 800;
+  font-size: 16px;
+  color: #fde047;
+  min-width: 60px;
+  text-align: center;
+}
+
+@keyframes pulseRateLimit {
+  0%, 100% { transform: translateX(-50%) scale(1); }
+  50% { transform: translateX(-50%) scale(1.02); }
+}

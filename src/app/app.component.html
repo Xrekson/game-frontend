@@ -1,44 +1,62 @@
 <div class="game-app-layout">
-  <!-- Top HUD Bar -->
-  <app-header-hud></app-header-hud>
-
-  <!-- Main Viewport & UI Overlay Split -->
-  <main class="main-body">
-    <!-- 2D Phaser Canvas Viewport -->
-    <div class="canvas-viewport">
-      <phaser-game></phaser-game>
-      <div class="controls-hint">
-        🎮 Move: <b>WASD</b> or <b>Arrow Keys</b> | <b>[E]</b> Interact / Attack
+  <!-- Global 429 Rate Limit Cooldown Overlay -->
+  <div class="rate-limit-overlay" *ngIf="isRateLimited$ | async">
+    <div class="rate-limit-content">
+      <span class="rate-limit-icon">🛑</span>
+      <div class="rate-limit-text">
+        <span class="rate-limit-title">429 RATE LIMIT EXCEEDED</span>
+        <span class="rate-limit-sub">All API actions temporarily disabled to prevent server load.</span>
+      </div>
+      <div class="rate-limit-timer-badge">
+        ⏳ {{ rateLimitCooldown$ | async }}s
       </div>
     </div>
+  </div>
 
-    <!-- Right Side Dashboard & Tab Panels -->
-    <aside class="dashboard-sidebar">
-      <nav class="tab-nav">
-        <button [class.active]="(activeTab$ | async) === 'economy'" (click)="setTab('economy')">
-          ⚡ Upgrades
-        </button>
-        <button [class.active]="(activeTab$ | async) === 'inventory'" (click)="setTab('inventory')">
-          🛡️ Armory
-        </button>
-        <button [class.active]="(activeTab$ | async) === 'trading'" (click)="setTab('trading')">
-          🏪 Market
-        </button>
-        <button [class.active]="(activeTab$ | async) === 'admin'" (click)="setTab('admin')">
-          ⚙️ Admin
-        </button>
-      </nav>
+  <!-- Top HUD Bar & Main Game Viewport ONLY render after login -->
+  <ng-container *ngIf="isLoggedIn()">
+    <app-header-hud></app-header-hud>
 
-      <div class="tab-content">
-        <app-economy-panel *ngIf="(activeTab$ | async) === 'economy'"></app-economy-panel>
-        <app-inventory-panel *ngIf="(activeTab$ | async) === 'inventory'"></app-inventory-panel>
-        <app-marketplace-panel *ngIf="(activeTab$ | async) === 'trading'"></app-marketplace-panel>
-        <app-admin-panel *ngIf="(activeTab$ | async) === 'admin'"></app-admin-panel>
+    <main class="main-body">
+      <!-- 2D Phaser Canvas Viewport -->
+      <div class="canvas-viewport">
+        <phaser-game></phaser-game>
+        <div class="controls-hint">
+          🎮 Move: <b>WASD</b> or <b>Arrow Keys</b> | <b>[E]</b> Interact / Attack
+        </div>
       </div>
-    </aside>
-  </main>
 
-  <!-- Modals -->
+      <!-- Right Side Dashboard & Tab Panels -->
+      <aside class="dashboard-sidebar">
+        <nav class="tab-nav">
+          <button [class.active]="(activeTab$ | async) === 'economy'" (click)="setTab('economy')">
+            ⚡ Upgrades
+          </button>
+          <button [class.active]="(activeTab$ | async) === 'properties'" (click)="setTab('properties')">
+            🏰 Properties
+          </button>
+          <button [class.active]="(activeTab$ | async) === 'inventory'" (click)="setTab('inventory')">
+            🛡️ Armory
+          </button>
+          <button [class.active]="(activeTab$ | async) === 'trading'" (click)="setTab('trading')">
+            🏪 Market
+          </button>
+        </nav>
+
+        <div class="tab-content">
+          <app-economy-panel *ngIf="(activeTab$ | async) === 'economy'"></app-economy-panel>
+          <app-properties-panel *ngIf="(activeTab$ | async) === 'properties'"></app-properties-panel>
+          <app-inventory-panel *ngIf="(activeTab$ | async) === 'inventory'"></app-inventory-panel>
+          <app-marketplace-panel *ngIf="(activeTab$ | async) === 'trading'"></app-marketplace-panel>
+        </div>
+      </aside>
+    </main>
+  </ng-container>
+
+  <!-- Modals ALWAYS rendered -->
   <app-auth-modal></app-auth-modal>
+  <app-token-invalid-modal></app-token-invalid-modal>
   <app-npc-shop-modal></app-npc-shop-modal>
+  <app-admin-panel></app-admin-panel>
+  <app-prestige-modal></app-prestige-modal>
 </div>

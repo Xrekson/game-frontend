@@ -79,3 +79,11 @@ The build artifacts will be stored in the `dist/template-angular` directory.
 | **Claim Offline Income** | Click `🎁 Claim Income` button in Upgrades panel |
 | **Equip Item** | Click `Equip` button in Armory panel |
 | **Sell Item** | Click `+ Sell Gear` button in Marketplace panel |
+
+---
+
+## 🎨 Asset Credits & Acknowledgments
+
+This project uses 2D game tilemaps, terrain textures (green/grey grass, water, red crypt tiles), buildings (castles, forts, houses, monasteries), character animations, and environment sprites from:
+- **[Tiny Swords by Pixel Frog](https://pixelfrog-assets.itch.io/tiny-swords)** (Free Pack 2D game asset pack).
+

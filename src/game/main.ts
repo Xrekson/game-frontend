@@ -3,6 +3,7 @@ import { DungeonScene } from './scenes/DungeonScene';
 import { MainMenu } from './scenes/MainMenu';
 import { Preloader } from './scenes/Preloader';
 import { SafeZoneScene } from './scenes/SafeZoneScene';
+import { PropertyScene } from './scenes/PropertyScene';
 import { AUTO, Game } from 'phaser';
 
 const config: Phaser.Types.Core.GameConfig = {
@@ -23,7 +24,8 @@ const config: Phaser.Types.Core.GameConfig = {
         Preloader,
         MainMenu,
         SafeZoneScene,
-        DungeonScene
+        DungeonScene,
+        PropertyScene
     ]
 };
 

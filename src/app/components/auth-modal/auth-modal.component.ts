@@ -17,7 +17,7 @@ import { GameStateService } from '../../services/game-state.service';
 
         <div class="form-group">
           <label>Username</label>
-          <input type="text" [(ngModel)]="username" placeholder="Hero username" />
+          <input type="text" [(ngModel)]="username" placeholder="Hero username" (input)="loginInput($event)"/>
         </div>
 
         <div class="form-group" *ngIf="!isLoginMode">
@@ -78,7 +78,8 @@ import { GameStateService } from '../../services/game-state.service';
     .btn-link { background: none; border: none; color: #38bdf8; font-weight: 600; cursor: pointer; margin-left: 4px; }
   `]
 })
-export class AuthModalComponent {
+export class AuthModalComponent
+{
   showModal$ = this.state.showAuthModal$;
   isLoginMode = true;
   username = '';
@@ -86,41 +87,56 @@ export class AuthModalComponent {
   password = '';
   errorMessage = '';
 
-  constructor(private api: ApiService, private state: GameStateService) {}
+  constructor(private api: ApiService, private state: GameStateService) { }
 
-  close() {
+  close()
+  {
     this.state.showAuthModal$.next(false);
   }
 
-  submit() {
+  submit()
+  {
     this.errorMessage = '';
-    if (!this.username || !this.password) {
+    if (!this.username || !this.password)
+    {
       this.errorMessage = 'Please fill out username and password';
       return;
     }
 
-    if (this.isLoginMode) {
+    if (this.isLoginMode)
+    {
       this.api.login(this.username, this.password).subscribe({
-        next: (res) => {
+        next: (res) =>
+        {
           localStorage.setItem('jwt_token', res.token);
+          this.api.setLoggedIn(true);
           this.close();
           window.location.reload();
         },
-        error: (err) => {
+        error: (err) =>
+        {
           this.errorMessage = err?.error?.error || 'Login failed';
         }
       });
-    } else {
+    } else
+    {
       this.api.register(this.username, this.email || 'player@guild.com', this.password).subscribe({
-        next: (res) => {
+        next: (res) =>
+        {
           localStorage.setItem('jwt_token', res.token);
+          this.api.setLoggedIn(true);
           this.close();
           window.location.reload();
         },
-        error: (err) => {
+        error: (err) =>
+        {
           this.errorMessage = err?.error?.error || 'Registration failed';
         }
       });
     }
+  }
+  loginInput(event: Event)
+  {
+    console.log(event);
   }
 }

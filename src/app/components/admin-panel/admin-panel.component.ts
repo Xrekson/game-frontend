@@ -2,159 +2,176 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
-import { ItemTemplate, ItemAttribute } from '../../services/game-state.service';
+import { GameStateService, ItemTemplate } from '../../services/game-state.service';
 
 @Component({
   selector: 'app-admin-panel',
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="admin-container">
-      <h2 class="panel-title">⚡ Admin Item & Attribute Management</h2>
-      <p class="panel-subtitle">Create and edit item templates with dynamic attributes, crystal sockets, and calculation expressions.</p>
+    <div class="modal-backdrop" *ngIf="showModal$ | async">
+      <div class="modal-card">
+        <button class="btn-close" (click)="close()">✕</button>
 
-      <div class="admin-layout">
-        <!-- Template List -->
-        <div class="template-list-card">
-          <h3>Existing Item Templates</h3>
-          <div class="template-list">
-            <div
-              class="template-item"
-              *ngFor="let tmpl of templates"
-              [class.active]="selectedTemplate?.template_id === tmpl.template_id"
-              (click)="selectTemplate(tmpl)">
-              <div class="tmpl-info">
-                <span class="tmpl-name">{{ tmpl.name }}</span>
-                <span class="tmpl-id">#{{ tmpl.template_id }}</span>
-              </div>
-              <div class="tmpl-badges">
-                <span class="badge-type">{{ getTypeName(tmpl.type) }}</span>
-                <span class="badge-attr" *ngIf="tmpl.has_attributes">Dynamic Attrs ({{ tmpl.attributes?.length || 0 }})</span>
+        <h2 class="panel-title">⚡ Admin Item & Attribute Management</h2>
+        <p class="panel-subtitle">Create and edit item templates with dynamic attributes, crystal sockets, and calculation expressions.</p>
+
+        <div class="admin-layout">
+          <!-- Template List -->
+          <div class="template-list-card">
+            <h3>Existing Templates</h3>
+            <div class="template-list">
+              <div
+                class="template-item"
+                *ngFor="let tmpl of templates"
+                [class.active]="selectedTemplate?.template_id === tmpl.template_id"
+                (click)="selectTemplate(tmpl)">
+                <div class="tmpl-info">
+                  <span class="tmpl-name">{{ tmpl.name }}</span>
+                  <span class="tmpl-id">#{{ tmpl.template_id }}</span>
+                </div>
+                <div class="tmpl-badges">
+                  <span class="badge-type">{{ getTypeName(tmpl.type) }}</span>
+                  <span class="badge-attr" *ngIf="tmpl.has_attributes">Dynamic ({{ tmpl.attributes?.length || 0 }})</span>
+                </div>
               </div>
             </div>
-          </div>
-          <button class="btn-secondary" (click)="resetForm()">+ Create New Template</button>
-        </div>
-
-        <!-- Form Editor -->
-        <div class="form-card">
-          <h3>{{ isEditing ? 'Edit Item Template' : 'Create New Item Template' }}</h3>
-          
-          <div class="preset-bar">
-            <span>Quick Presets:</span>
-            <button class="btn-preset" (click)="loadPreset('stone_picker')">Stone Picker</button>
-            <button class="btn-preset" (click)="loadPreset('iron_gladiator')">Iron Gladiator</button>
-            <button class="btn-preset" (click)="loadPreset('havoc_axe')">Havoc Axe</button>
+            <button class="btn-secondary" (click)="resetForm()">+ Create New Template</button>
           </div>
 
-          <form (ngSubmit)="saveTemplate()" class="editor-form">
-            <div class="form-row">
-              <div class="form-group">
-                <label>Template ID</label>
-                <input type="text" [(ngModel)]="form.template_id" name="template_id" placeholder="e.g. wep_iron_gladiator" [disabled]="isEditing" required />
-              </div>
-              <div class="form-group">
-                <label>Item Name</label>
-                <input type="text" [(ngModel)]="form.name" name="name" placeholder="e.g. Iron Gladiator" required />
-              </div>
+          <!-- Form Editor -->
+          <div class="form-card">
+            <h3>{{ isEditing ? 'Edit Item Template' : 'Create New Item Template' }}</h3>
+
+            <div class="preset-bar">
+              <span>Presets:</span>
+              <button class="btn-preset" (click)="loadPreset('stone_picker')">Stone Picker</button>
+              <button class="btn-preset" (click)="loadPreset('iron_gladiator')">Iron Gladiator</button>
+              <button class="btn-preset" (click)="loadPreset('havoc_axe')">Havoc Axe</button>
             </div>
 
-            <div class="form-row">
-              <div class="form-group">
-                <label>Item Type</label>
-                <select [(ngModel)]="form.type" name="type">
-                  <option [ngValue]="0">WEAPON (0)</option>
-                  <option [ngValue]="1">ARMOUR (1)</option>
-                  <option [ngValue]="2">ARMAMENT (2)</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label>Rarity</label>
-                <select [(ngModel)]="form.rarity" name="rarity">
-                  <option value="Common">Common</option>
-                  <option value="Rare">Rare</option>
-                  <option value="Epic">Epic</option>
-                  <option value="Legendary">Legendary</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label>Base Attack</label>
-                <input type="number" [(ngModel)]="form.base_attack" name="base_attack" />
-              </div>
-              <div class="form-group">
-                <label>Base Defense</label>
-                <input type="number" [(ngModel)]="form.base_defense" name="base_defense" />
-              </div>
-              <div class="form-group">
-                <label>Base Price ($)</label>
-                <input type="number" [(ngModel)]="form.base_price" name="base_price" />
-              </div>
-            </div>
-
-            <!-- BOOLEAN TOGGLE FOR DYNAMIC ATTRIBUTES -->
-            <div class="toggle-box">
-              <label class="checkbox-label">
-                <input type="checkbox" [(ngModel)]="form.has_attributes" name="has_attributes" />
-                <span class="toggle-title">Enable Dynamic Item Attributes & Calculation Expressions</span>
-              </label>
-            </div>
-
-            <!-- DYNAMIC ATTRIBUTE LIST EDITOR -->
-            <div class="attributes-section" *ngIf="form.has_attributes">
-              <div class="attr-header">
-                <h4>Dynamic Attributes List</h4>
-                <button type="button" class="btn-small" (click)="addAttribute()">+ Add Attribute</button>
+            <form (ngSubmit)="saveTemplate()" class="editor-form">
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Template ID</label>
+                  <input type="text" [(ngModel)]="form.template_id" name="template_id" placeholder="e.g. wep_iron_gladiator" [disabled]="isEditing" required />
+                </div>
+                <div class="form-group">
+                  <label>Item Name</label>
+                  <input type="text" [(ngModel)]="form.name" name="name" placeholder="e.g. Iron Gladiator" required />
+                </div>
               </div>
 
-              <div class="attr-row" *ngFor="let attr of form.attributes; let i = index">
-                <input type="text" [(ngModel)]="attr.key" [name]="'attr_key_' + i" placeholder="Attribute Key (e.g. speed)" required />
-                
-                <select [(ngModel)]="attr.type" [name]="'attr_type_' + i">
-                  <option value="DAMAGE">DAMAGE</option>
-                  <option value="BUFF">BUFF</option>
-                  <option value="EXP_BONUS">EXP_BONUS</option>
-                  <option value="GOLD_BONUS">GOLD_BONUS</option>
-                  <option value="SPECIAL">SPECIAL</option>
-                </select>
-
-                <input type="text" [(ngModel)]="attr.value" [name]="'attr_val_' + i" placeholder="Value (e.g. 1.2)" required />
-                
-                <input type="text" [(ngModel)]="attr.calculation_expr" [name]="'attr_expr_' + i" placeholder="Calculation Expr (e.g. base_atk * 1.25)" />
-
-                <button type="button" class="btn-danger" (click)="removeAttribute(i)">✕</button>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Item Type</label>
+                  <select [(ngModel)]="form.type" name="type">
+                    <option [ngValue]="0">WEAPON (0)</option>
+                    <option [ngValue]="1">ARMOUR (1)</option>
+                    <option [ngValue]="2">ARMAMENT (2)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Rarity</label>
+                  <select [(ngModel)]="form.rarity" name="rarity">
+                    <option value="Common">Common</option>
+                    <option value="Rare">Rare</option>
+                    <option value="Epic">Epic</option>
+                    <option value="Legendary">Legendary</option>
+                  </select>
+                </div>
               </div>
 
-              <div class="empty-attr-note" *ngIf="form.attributes.length === 0">
-                No attributes added yet. Click "+ Add Attribute" to define custom crystal sockets or formula expressions.
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Base Attack</label>
+                  <input type="number" [(ngModel)]="form.base_attack" name="base_attack" />
+                </div>
+                <div class="form-group">
+                  <label>Base Defense</label>
+                  <input type="number" [(ngModel)]="form.base_defense" name="base_defense" />
+                </div>
+                <div class="form-group">
+                  <label>Base Price ($)</label>
+                  <input type="number" [(ngModel)]="form.base_price" name="base_price" />
+                </div>
               </div>
-            </div>
 
-            <div class="form-actions">
-              <button type="submit" class="btn-primary">{{ isEditing ? 'Update Template' : 'Save Template' }}</button>
-              <button type="button" class="btn-secondary" (click)="resetForm()" *ngIf="isEditing">Cancel</button>
-            </div>
-            <p class="status-msg" *ngIf="statusMsg" [class.error]="isError">{{ statusMsg }}</p>
-          </form>
+              <!-- BOOLEAN TOGGLE FOR DYNAMIC ATTRIBUTES -->
+              <div class="toggle-box">
+                <label class="checkbox-label">
+                  <input type="checkbox" [(ngModel)]="form.has_attributes" name="has_attributes" />
+                  <span class="toggle-title">Enable Dynamic Attributes & Calculation Expressions</span>
+                </label>
+              </div>
+
+              <!-- DYNAMIC ATTRIBUTE LIST EDITOR -->
+              <div class="attributes-section" *ngIf="form.has_attributes">
+                <div class="attr-header">
+                  <h4>Dynamic Attributes List</h4>
+                  <button type="button" class="btn-small" (click)="addAttribute()">+ Add Attribute</button>
+                </div>
+
+                <div class="attr-row" *ngFor="let attr of form.attributes; let i = index">
+                  <input type="text" [(ngModel)]="attr.key" [name]="'attr_key_' + i" placeholder="Key (e.g. speed)" required />
+
+                  <select [(ngModel)]="attr.type" [name]="'attr_type_' + i">
+                    <option value="DAMAGE">DAMAGE</option>
+                    <option value="BUFF">BUFF</option>
+                    <option value="EXP_BONUS">EXP_BONUS</option>
+                    <option value="GOLD_BONUS">GOLD_BONUS</option>
+                    <option value="SPECIAL">SPECIAL</option>
+                  </select>
+
+                  <input type="text" [(ngModel)]="attr.value" [name]="'attr_val_' + i" placeholder="Value (e.g. 1.2)" required />
+
+                  <input type="text" [(ngModel)]="attr.calculation_expr" [name]="'attr_expr_' + i" placeholder="Expr (e.g. base_atk * 1.25)" />
+
+                  <button type="button" class="btn-danger" (click)="removeAttribute(i)">✕</button>
+                </div>
+
+                <div class="empty-attr-note" *ngIf="form.attributes.length === 0">
+                  No attributes added yet. Click "+ Add Attribute" to define custom crystal sockets.
+                </div>
+              </div>
+
+              <div class="form-actions">
+                <button type="submit" class="btn-primary">{{ isEditing ? 'Update Template' : 'Save Template' }}</button>
+                <button type="button" class="btn-secondary" (click)="resetForm()" *ngIf="isEditing">Cancel</button>
+              </div>
+              <p class="status-msg" *ngIf="statusMsg" [class.error]="isError">{{ statusMsg }}</p>
+            </form>
+          </div>
         </div>
       </div>
     </div>
   `,
   styles: [`
-    .admin-container { padding: 16px; display: flex; flex-direction: column; gap: 16px; color: #f8fafc; }
+    .modal-backdrop {
+      position: fixed; inset: 0; z-index: 1200;
+      background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(10px);
+      display: flex; justify-content: center; align-items: center; padding: 20px;
+    }
+    .modal-card {
+      position: relative; width: 900px; max-width: 95vw; max-height: 90vh; overflow-y: auto; padding: 28px;
+      background: rgba(30, 41, 59, 0.95); border: 1px solid rgba(56, 189, 248, 0.4);
+      border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6); color: #f8fafc;
+    }
+    .btn-close {
+      position: absolute; top: 16px; right: 16px; background: none; border: none;
+      color: #94a3b8; font-size: 18px; cursor: pointer;
+    }
     .panel-title { font-size: 18px; font-weight: 800; margin: 0; color: #fef08a; }
-    .panel-subtitle { font-size: 12px; color: #94a3b8; margin: 0; }
-    .admin-layout { display: grid; grid-template-columns: 260px 1fr; gap: 16px; }
+    .panel-subtitle { font-size: 12px; color: #94a3b8; margin: 0 0 16px 0; }
+    .admin-layout { display: grid; grid-template-columns: 240px 1fr; gap: 16px; }
     .template-list-card, .form-card {
-      background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 12px; padding: 16px; backdrop-filter: blur(8px); display: flex; flex-direction: column; gap: 12px;
+      background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 12px;
     }
     h3 { font-size: 14px; font-weight: 700; margin: 0; color: #38bdf8; }
-    .template-list { display: flex; flex-direction: column; gap: 8px; max-height: 400px; overflow-y: auto; }
+    .template-list { display: flex; flex-direction: column; gap: 8px; max-height: 380px; overflow-y: auto; }
     .template-item {
-      padding: 10px; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 10px; background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(255, 255, 255, 0.05);
       border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
     }
     .template-item.active { border-color: #38bdf8; background: rgba(56, 189, 248, 0.15); }
@@ -183,7 +200,7 @@ import { ItemTemplate, ItemAttribute } from '../../services/game-state.service';
     .attributes-section { display: flex; flex-direction: column; gap: 8px; background: rgba(15, 23, 42, 0.5); padding: 12px; border-radius: 8px; }
     .attr-header { display: flex; justify-content: space-between; align-items: center; }
     .attr-header h4 { font-size: 12px; font-weight: 700; margin: 0; color: #fef08a; }
-    .attr-row { display: grid; grid-template-columns: 1fr 110px 1fr 1.2fr 30px; gap: 6px; align-items: center; }
+    .attr-row { display: grid; grid-template-columns: 1fr 100px 1fr 1fr 30px; gap: 6px; align-items: center; }
     .btn-small { background: #0284c7; border: none; color: white; font-size: 10px; font-weight: 700; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
     .btn-danger { background: #ef4444; border: none; color: white; font-size: 12px; border-radius: 4px; cursor: pointer; height: 32px; }
     .empty-attr-note { font-size: 11px; color: #64748b; font-style: italic; }
@@ -195,6 +212,7 @@ import { ItemTemplate, ItemAttribute } from '../../services/game-state.service';
   `]
 })
 export class AdminPanelComponent implements OnInit {
+  showModal$ = this.state.showAdminModal$;
   templates: ItemTemplate[] = [];
   selectedTemplate: ItemTemplate | null = null;
   isEditing = false;
@@ -213,10 +231,14 @@ export class AdminPanelComponent implements OnInit {
     attributes: []
   };
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, private state: GameStateService) {}
 
   ngOnInit() {
     this.loadTemplates();
+  }
+
+  close() {
+    this.state.showAdminModal$.next(false);
   }
 
   loadTemplates() {

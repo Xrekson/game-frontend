@@ -77,6 +77,13 @@ export class GameStateService
 
   public activeNPCShop$ = new BehaviorSubject<any | null>(null);
   public showAuthModal$ = new BehaviorSubject<boolean>(false);
+  public showInvalidTokenModal$ = new BehaviorSubject<boolean>(false);
+  public showAdminModal$ = new BehaviorSubject<boolean>(false);
+  public showPrestigeModal$ = new BehaviorSubject<boolean>(false);
+
+  public isRateLimited$ = new BehaviorSubject<boolean>(false);
+  public rateLimitCooldown$ = new BehaviorSubject<number>(0);
+  private rateLimitTimer: any = null;
 
   constructor()
   {
@@ -87,6 +94,31 @@ export class GameStateService
       const incomeRate = this.incomePerSec$.getValue();
       this.balance$.next(currentBal + (incomeRate * 0.1));
     }, 100);
+  }
+
+  triggerRateLimit(seconds: number = 10): void
+  {
+    if (this.rateLimitTimer)
+    {
+      clearInterval(this.rateLimitTimer);
+    }
+    this.isRateLimited$.next(true);
+    this.rateLimitCooldown$.next(seconds);
+
+    this.rateLimitTimer = setInterval(() =>
+    {
+      const current = this.rateLimitCooldown$.getValue();
+      if (current <= 1)
+      {
+        clearInterval(this.rateLimitTimer);
+        this.rateLimitTimer = null;
+        this.rateLimitCooldown$.next(0);
+        this.isRateLimited$.next(false);
+      } else
+      {
+        this.rateLimitCooldown$.next(current - 1);
+      }
+    }, 1000);
   }
 
   setBalance(bal: number, rate: number): void
